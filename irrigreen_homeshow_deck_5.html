@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irrigreen × Sod Smith — Home Show Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #141A22;
+    --surface: #1C2530;
+    --border:  #2A3545;
+    --green:   #52D68A;
+    --gold:    #F2BC60;
+    --teal:    #4DC8B0;
+    --hot:     #FF8C42;
+    --slate:   #9DB3C8;
+    --dim:     #566D83;
+    --white:   #E8EFF6;
+    --red:     #E07070;
+  }
+  html, body { width:100vw; height:100vh; overflow:hidden; background:#0D1219; font-family:'DM Sans',sans-serif; color:var(--white); }
+  .deck { width:100vw; height:100vh; position:relative; }
+  .slide { position:absolute; inset:0; display:none; flex-direction:column; background:var(--bg); padding:2vh 3vw 4vh; overflow:hidden; }
+  .slide.active { display:flex; }
+
+  .chrome { display:flex; justify-content:space-between; align-items:center; flex-shrink:0; margin-bottom:1vh; }
+  .logo-group { display:flex; align-items:center; gap:.6vw; }
+  .logo-word { font-family:'DM Mono',monospace; font-size:clamp(12px,1.1vw,18px); font-weight:500; letter-spacing:.07em; }
+  .logo-word.green { color:var(--green); }
+  .logo-word.gold  { color:var(--gold); }
+  .sep { color:var(--dim); font-size:clamp(12px,1.1vw,18px); }
+  .slide-label { font-family:'DM Mono',monospace; font-size:clamp(10px,.9vw,14px); color:var(--dim); }
+  .divider { height:1px; background:var(--border); flex-shrink:0; margin-bottom:1.5vh; }
+
+  .nav { position:fixed; bottom:1.5vh; left:50%; transform:translateX(-50%); display:flex; gap:.5vw; z-index:100; }
+  .dot { width:clamp(24px,2.5vw,40px); height:clamp(4px,.5vh,6px); border-radius:3px; background:var(--dim); cursor:pointer; transition:background .2s; }
+  .dot.on { background:var(--green); }
+  .arrow { position:fixed; top:50%; transform:translateY(-50%); background:var(--surface); border:1px solid var(--border); color:var(--slate); width:clamp(32px,2.5vw,44px); height:clamp(32px,2.5vw,44px); border-radius:50%; cursor:pointer; font-size:clamp(14px,1.2vw,20px); display:flex; align-items:center; justify-content:center; z-index:100; transition:all .15s; }
+  .arrow:hover { background:var(--border); color:var(--white); }
+  #prev { left:.8vw; } #next { right:.8vw; }
+
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:clamp(8px,.8vw,14px); padding:clamp(12px,1.5vh,20px) clamp(14px,1.4vw,22px); display:flex; flex-direction:column; }
+  .panel-title { font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,12px); letter-spacing:.1em; text-transform:uppercase; margin-bottom:clamp(8px,1vh,14px); padding-bottom:clamp(7px,.9vh,12px); border-bottom:1px solid var(--border); flex-shrink:0; }
+
+  .stat { background:var(--surface); border:1px solid var(--border); border-radius:clamp(8px,.7vw,12px); padding:clamp(10px,1.4vh,18px) clamp(12px,1.2vw,20px); flex:1; position:relative; overflow:hidden; }
+  .stat-bar { position:absolute; top:0; left:0; right:0; height:3px; border-radius:8px 8px 0 0; }
+  .stat-val { font-size:clamp(20px,2.2vw,34px); font-weight:600; line-height:1; margin-bottom:clamp(4px,.5vh,8px); font-family:'DM Mono',monospace; }
+  .stat-lbl { font-size:clamp(11px,.85vw,14px); color:var(--slate); }
+
+  .bar-item { display:flex; flex-direction:column; gap:clamp(4px,.5vh,7px); }
+  .bar-meta { display:flex; justify-content:space-between; align-items:baseline; }
+  .bar-lbl  { font-size:clamp(11px,.9vw,14px); color:var(--slate); }
+  .bar-val  { font-family:'DM Mono',monospace; font-size:clamp(11px,.9vw,14px); font-weight:500; }
+  .bar-track { height:clamp(7px,.8vh,12px); background:#1E2E3E; border-radius:5px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:5px; }
+
+  .legend-item { display:flex; align-items:flex-start; gap:clamp(7px,.7vw,12px); }
+  .legend-dot  { width:clamp(10px,.8vw,14px); height:clamp(10px,.8vw,14px); border-radius:3px; flex-shrink:0; margin-top:3px; }
+  .legend-lbl  { font-size:clamp(11px,.85vw,14px); color:var(--slate); }
+  .legend-val  { font-size:clamp(14px,1.2vw,19px); font-weight:600; font-family:'DM Mono',monospace; }
+  .legend-pct  { font-size:clamp(10px,.75vw,13px); color:var(--dim); margin-left:4px; }
+
+  .mini-table { width:100%; border-collapse:collapse; }
+  .mini-table th { font-family:'DM Mono',monospace; font-size:clamp(9px,.72vw,12px); letter-spacing:.07em; color:var(--dim); text-align:left; padding:0 clamp(6px,.6vw,10px) clamp(7px,.9vh,12px); border-bottom:1px solid var(--border); }
+  .mini-table td { padding:clamp(6px,.8vh,11px) clamp(6px,.6vw,10px); border-bottom:1px solid #1A2535; font-size:clamp(12px,1vw,15px); }
+  .mini-table tr:last-child td { border-bottom:none; }
+  .mini-table .total-row td { border-top:1px solid var(--border); padding-top:clamp(8px,1vh,13px); font-weight:600; font-size:clamp(13px,1.1vw,16px); }
+
+  .slide-headline { font-size:clamp(26px,3.2vw,52px); font-weight:600; line-height:1.15; letter-spacing:-.02em; margin-bottom:clamp(12px,1.6vh,22px); flex-shrink:0; }
+  .slide-subhead  { font-size:clamp(18px,1.9vw,30px); font-weight:600; margin-bottom:clamp(12px,1.6vh,22px); flex-shrink:0; }
+  .eyebrow { font-size:clamp(9px,.75vw,12px); color:var(--dim); font-family:'DM Mono',monospace; letter-spacing:.08em; margin-bottom:clamp(7px,.9vh,12px); flex-shrink:0; }
+  .stat-row { display:flex; gap:clamp(8px,.8vw,14px); margin-bottom:clamp(10px,1.4vh,18px); flex-shrink:0; }
+  .bottom-panels { display:flex; gap:clamp(10px,1vw,16px); flex:1; min-height:0; }
+  .infobox { background:#101820; border:1px solid var(--border); border-radius:clamp(7px,.7vw,11px); padding:clamp(10px,1.2vh,16px) clamp(12px,1.2vw,18px); }
+  .infobox-text { font-size:clamp(12px,.95vw,15px); color:var(--slate); line-height:1.85; }
+  .mono-hi { font-family:'DM Mono',monospace; font-weight:600; }
+  .big-num-box { border-radius:clamp(8px,.8vw,12px); padding:clamp(12px,1.5vh,20px) clamp(14px,1.4vw,22px); }
+  .big-num-label { font-size:clamp(12px,.9vw,15px); color:var(--slate); margin-bottom:clamp(4px,.5vh,7px); }
+  .big-num-val   { font-size:clamp(28px,3vw,46px); font-weight:700; font-family:'DM Mono',monospace; line-height:1; }
+  .big-num-sub   { font-size:clamp(11px,.8vw,13px); color:var(--dim); margin-top:clamp(3px,.4vh,6px); }
+
+  .status-row { display:flex; align-items:center; gap:clamp(10px,1vw,16px); border-radius:clamp(7px,.7vw,11px); padding:clamp(10px,1.2vh,16px) clamp(12px,1.2vw,18px); border:1px solid var(--border); }
+  .status-count { font-size:clamp(24px,2.5vw,38px); font-weight:700; width:clamp(40px,4vw,60px); text-align:right; flex-shrink:0; font-family:'DM Mono',monospace; }
+  .status-vline { width:1px; height:clamp(28px,3vh,40px); background:var(--border); flex-shrink:0; }
+  .status-label { font-size:clamp(13px,1.1vw,17px); font-weight:500; margin-bottom:2px; }
+  .status-amt   { font-family:'DM Mono',monospace; font-size:clamp(11px,.85vw,14px); color:var(--slate); }
+  .status-bar-wrap { width:clamp(80px,10vw,160px); flex-shrink:0; }
+  .status-bar-track { height:clamp(5px,.6vh,8px); background:#1E2E3E; border-radius:4px; overflow:hidden; }
+  .status-bar-fill  { height:100%; border-radius:4px; }
+  .footnote { font-size:clamp(9px,.72vw,12px); color:var(--dim); font-family:'DM Mono',monospace; font-style:italic; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ══════════════════════════════════════════
+     SLIDE 1 — Overview
+══════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="chrome">
+    <div class="logo-group"><span class="logo-word green">IRRIGREEN</span><span class="sep">×</span><span class="logo-word gold">SOD SMITH</span></div>
+    <span class="slide-label">01 / 03</span>
+  </div>
+  <div class="divider"></div>
+  <div class="eyebrow">HOME &amp; GARDEN SHOW · FEBRUARY 2026 · MINNEAPOLIS</div>
+
+  <div class="slide-headline">
+    49 estimates written.<br>
+    <span style="color:var(--green);">$414K</span> total active pipeline.
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-bar" style="background:var(--green)"></div><div class="stat-val" style="color:var(--green);">$414K</div><div class="stat-lbl">Total active pipeline</div></div>
+    <div class="stat"><div class="stat-bar" style="background:var(--green)"></div><div class="stat-val" style="color:var(--green);">$155K</div><div class="stat-lbl">Irrigreen hardware (net)</div></div>
+    <div class="stat"><div class="stat-bar" style="background:var(--gold)"></div><div class="stat-val" style="color:var(--gold);">$184K</div><div class="stat-lbl">SS services + margin</div></div>
+    <div class="stat"><div class="stat-bar" style="background:var(--teal)"></div><div class="stat-val" style="color:var(--teal);">$59K</div><div class="stat-lbl">Sod revenue</div></div>
+    <div class="stat"><div class="stat-bar" style="background:var(--slate)"></div><div class="stat-val" style="color:var(--white);">$8,451</div><div class="stat-lbl">Avg deal size</div></div>
+  </div>
+
+  <div class="bottom-panels">
+    <div style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:clamp(8px,.8vw,14px); padding:clamp(14px,1.6vh,22px) clamp(14px,1.4vw,22px); display:flex; flex-direction:column; gap:clamp(8px,1vh,12px);">
+      <div style="font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,12px); color:var(--dim); letter-spacing:.1em; text-transform:uppercase; flex-shrink:0; margin-bottom:4px;">Pipeline Breakdown</div>
+
+      <div class="status-row" style="background:#0A1F12; border-color:#1E4030;">
+        <div class="status-count" style="color:var(--green);">3</div>
+        <div class="status-vline"></div>
+        <div style="flex:1;"><div class="status-label" style="color:var(--green);">Closed · Won</div><div class="status-amt">$26,172 · booked revenue</div></div>
+        <div class="status-bar-wrap"><div class="status-bar-track"><div class="status-bar-fill" style="width:6%; background:var(--green)"></div></div></div>
+      </div>
+
+      <div class="status-row" style="background:#1A1000; border-color:#3A2800;">
+        <div class="status-count" style="color:var(--hot);">4</div>
+        <div class="status-vline"></div>
+        <div style="flex:1;"><div class="status-label" style="color:var(--hot);">Hot Pipeline · Onsite Scheduled</div><div class="status-amt">$44,567 · confirmed follow-up</div></div>
+        <div class="status-bar-wrap"><div class="status-bar-track"><div class="status-bar-fill" style="width:11%; background:var(--hot)"></div></div></div>
+      </div>
+
+      <div class="status-row" style="background:#171F2A;">
+        <div class="status-count" style="color:var(--gold);">39</div>
+        <div class="status-vline"></div>
+        <div style="flex:1;"><div class="status-label" style="color:var(--gold);">Awaiting Approval</div><div class="status-amt">$343,382 · virtual quotes pending</div></div>
+        <div class="status-bar-wrap"><div class="status-bar-track"><div class="status-bar-fill" style="width:83%; background:var(--gold)"></div></div></div>
+      </div>
+
+      <div class="status-row" style="background:#171F2A;">
+        <div class="status-count" style="color:var(--red);">3</div>
+        <div class="status-vline"></div>
+        <div style="flex:1;"><div class="status-label" style="color:var(--red);">Declined</div><div class="status-amt">$15,402 · lost</div></div>
+        <div class="status-bar-wrap"><div class="status-bar-track"><div class="status-bar-fill" style="width:4%; background:var(--red)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Donut — IG 36%, SS svc 43%, Sod 14%, BF 7% -->
+    <div style="flex:1.4; background:var(--surface); border:1px solid var(--border); border-radius:clamp(8px,.8vw,14px); padding:clamp(14px,1.6vh,22px) clamp(14px,1.4vw,22px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(12px,1.8vh,22px);">
+      <div style="position:relative; width:min(32vh,36%); aspect-ratio:1;">
+        <svg viewBox="0 0 160 160" style="width:100%;height:100%;display:block;">
+          <circle cx="80" cy="80" r="56" fill="none" stroke="#1E2E3E" stroke-width="20"/>
+          <!-- IG HW 35.9% -->
+          <circle cx="80" cy="80" r="56" fill="none" stroke="#52D68A" stroke-width="20" stroke-dasharray="126.4 225.6" stroke-dashoffset="140" transform="rotate(0 80 80)"/>
+          <!-- SS svc 42.9% -->
+          <circle cx="80" cy="80" r="56" fill="none" stroke="#F2BC60" stroke-width="20" stroke-dasharray="150.5 201.5" stroke-dashoffset="-126.4" transform="rotate(-90 80 80)"/>
+          <!-- Sod 13.7% -->
+          <circle cx="80" cy="80" r="56" fill="none" stroke="#4DC8B0" stroke-width="20" stroke-dasharray="48.1 303.9" stroke-dashoffset="-276.9" transform="rotate(-90 80 80)"/>
+          <!-- BF 7.5% -->
+          <circle cx="80" cy="80" r="56" fill="none" stroke="#566D83" stroke-width="20" stroke-dasharray="26.4 325.6" stroke-dashoffset="-325.0" transform="rotate(-90 80 80)"/>
+          <text x="80" y="75" text-anchor="middle" fill="#9DB3C8" font-family="DM Mono,monospace" font-size="10" letter-spacing="1">TOTAL</text>
+          <text x="80" y="95" text-anchor="middle" fill="#E8EFF6" font-family="DM Mono,monospace" font-size="17" font-weight="700">$414K</text>
+        </svg>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:clamp(8px,1vh,14px) clamp(16px,2vw,28px); width:100%;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><div><div class="legend-lbl">Irrigreen HW (net)</div><div><span class="legend-val" style="color:var(--green);">$154,538</span><span class="legend-pct">36%</span></div></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div><div><div class="legend-lbl">SS Services + Margin</div><div><span class="legend-val" style="color:var(--gold);">$184,362</span><span class="legend-pct">43%</span></div></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div><div><div class="legend-lbl">Sod Installation</div><div><span class="legend-val" style="color:var(--teal);">$58,843</span><span class="legend-pct">14%</span></div></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--dim)"></div><div><div class="legend-lbl">Backflow (at-cost)</div><div><span class="legend-val" style="color:var(--slate);">$32,400</span><span class="legend-pct">8%</span></div></div></div>
+      </div>
+      <div class="footnote" style="text-align:center;">HW shown at Irrigreen net · SS margin (25%) rolled into services</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 2 — Irrigreen Hardware
+══════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="chrome">
+    <div class="logo-group"><span class="logo-word green">IRRIGREEN</span><span class="sep">×</span><span class="logo-word gold">SOD SMITH</span></div>
+    <span class="slide-label">02 / 03</span>
+  </div>
+  <div class="divider"></div>
+  <div class="slide-subhead">Irrigreen Hardware Opportunity</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:clamp(10px,1vw,18px); flex:1; min-height:0;">
+    <div style="display:flex; flex-direction:column; gap:clamp(10px,1.2vh,16px);">
+
+      <div style="background:#0A1F12; border:1px solid #2A5040; border-radius:clamp(8px,.8vw,12px); padding:clamp(12px,1.5vh,18px) clamp(14px,1.4vw,20px);">
+        <div style="font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,12px); color:var(--green); letter-spacing:.1em; text-transform:uppercase; margin-bottom:clamp(6px,.8vh,10px);">✓ Closed · Won</div>
+        <div style="font-size:clamp(28px,2.8vw,42px); font-weight:700; color:var(--green); font-family:'DM Mono',monospace; line-height:1;">$9,727</div>
+        <div style="font-size:clamp(11px,.85vw,14px); color:var(--dim); margin-top:4px;">hardware net · 3 jobs booked</div>
+      </div>
+
+      <div style="background:#1A1000; border:1px solid #3A2800; border-radius:clamp(8px,.8vw,12px); padding:clamp(12px,1.5vh,18px) clamp(14px,1.4vw,20px);">
+        <div style="font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,12px); color:var(--hot); letter-spacing:.1em; text-transform:uppercase; margin-bottom:clamp(6px,.8vh,10px);">⬆ Hot Pipeline · Onsite Scheduled</div>
+        <div style="font-size:clamp(28px,2.8vw,42px); font-weight:700; color:var(--hot); font-family:'DM Mono',monospace; line-height:1;">$13,846</div>
+        <div style="font-size:clamp(11px,.85vw,14px); color:var(--dim); margin-top:4px;">hardware net · 4 confirmed visits</div>
+      </div>
+
+      <div class="panel" style="flex:1;">
+        <div class="panel-title" style="color:var(--green);">Main Pipeline → 37% Projection</div>
+        <div style="display:flex; flex-direction:column; gap:clamp(10px,1.4vh,16px); flex:1; justify-content:center;">
+          <div class="big-num-box" style="background:#0F2018; border:1px solid #1E4030;">
+            <div class="big-num-label">Hardware in main pipeline (net)</div>
+            <div class="big-num-val" style="color:var(--green);">$130,965</div>
+            <div class="big-num-sub">39 estimates · virtual quotes</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8vw;">
+            <div style="height:1px; flex:1; background:var(--border);"></div>
+            <div style="font-size:clamp(11px,.85vw,14px); color:var(--dim); font-family:'DM Mono',monospace; white-space:nowrap;">× 37% close rate (2025 avg)</div>
+            <div style="height:1px; flex:1; background:var(--border);"></div>
+          </div>
+          <div class="big-num-box" style="background:#0F2018; border:1px solid #2A5040;">
+            <div class="big-num-label">Projected hardware revenue (net)</div>
+            <div class="big-num-val" style="color:var(--green);">$48,457</div>
+            <div class="big-num-sub">≈ 14 installs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:clamp(10px,1.2vh,16px);">
+      <div class="panel" style="flex:1;">
+        <div class="panel-title" style="color:var(--green);">Hardware Deal Size Distribution</div>
+        <div style="display:flex; flex-direction:column; gap:clamp(12px,1.6vh,20px); flex:1; justify-content:center;">
+          <div class="bar-item">
+            <div class="bar-meta"><span class="bar-lbl">Under $4K &nbsp;<span style="color:var(--dim);font-size:clamp(10px,.75vw,12px);">3 jobs</span></span><span class="bar-val" style="color:var(--green);">$8,637</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:5%;background:var(--green);opacity:.5;"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-meta"><span class="bar-lbl">$4K – $6K &nbsp;<span style="color:var(--dim);font-size:clamp(10px,.75vw,12px);">12 jobs</span></span><span class="bar-val" style="color:var(--green);">$58,862</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:29%;background:var(--green);opacity:.7;"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-meta"><span class="bar-lbl">$6K – $8K &nbsp;<span style="color:var(--dim);font-size:clamp(10px,.75vw,12px);">14 jobs</span></span><span class="bar-val" style="color:var(--green);">$68,535</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:33%;background:var(--green);opacity:.85;"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-meta"><span class="bar-lbl">Over $8K &nbsp;<span style="color:var(--dim);font-size:clamp(10px,.75vw,12px);">10 jobs</span></span><span class="bar-val" style="color:var(--green);">$70,016</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:34%;background:var(--green);"></div></div>
+          </div>
+        </div>
+        <div class="footnote" style="margin-top:clamp(8px,1vh,12px);">Shown at customer list price · Irrigreen net is 75% of these figures</div>
+      </div>
+      <div class="infobox">
+        <div class="infobox-text">
+          Closed + Hot HW (net): <span class="mono-hi" style="color:var(--green);">$23,573</span><br>
+          Main pipeline projected at 37%: <span class="mono-hi" style="color:var(--green);">$48,457</span><br>
+          Combined Irrigreen HW outlook: <span class="mono-hi" style="color:var(--white);">$72,030</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 3 — Sod Smith + Full Projection
+══════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="chrome">
+    <div class="logo-group"><span class="logo-word green">IRRIGREEN</span><span class="sep">×</span><span class="logo-word gold">SOD SMITH</span></div>
+    <span class="slide-label">03 / 03</span>
+  </div>
+  <div class="divider"></div>
+  <div class="slide-subhead">Sod Smith Revenue &amp; Full Projection</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:clamp(10px,1vw,16px); flex:1; min-height:0;">
+
+    <div class="panel">
+      <div class="panel-title" style="color:var(--gold);">Sod Smith Full Pipeline</div>
+      <div style="display:flex; flex-direction:column; gap:clamp(12px,1.6vh,20px); flex:1; justify-content:center;">
+        <div>
+          <div style="font-size:clamp(11px,.85vw,14px); color:var(--slate); margin-bottom:2px;">Install Labor + HW Margin (25%)</div>
+          <div style="font-size:clamp(24px,2.6vw,38px); font-weight:700; color:var(--gold); font-family:'DM Mono',monospace; line-height:1; margin-bottom:6px;">$184,362</div>
+          <div class="bar-track"><div class="bar-fill" style="width:67%;background:var(--gold);"></div></div>
+          <div style="font-size:clamp(9px,.7vw,11px); color:var(--dim); margin-top:5px;">labor $132,850 + HW margin $51,512</div>
+        </div>
+        <div>
+          <div style="font-size:clamp(11px,.85vw,14px); color:var(--slate); margin-bottom:2px;">Sod Installation</div>
+          <div style="font-size:clamp(24px,2.6vw,38px); font-weight:700; color:var(--teal); font-family:'DM Mono',monospace; line-height:1; margin-bottom:6px;">$58,843</div>
+          <div class="bar-track"><div class="bar-fill" style="width:21%;background:var(--teal);"></div></div>
+        </div>
+        <div>
+          <div style="font-size:clamp(11px,.85vw,14px); color:var(--slate); margin-bottom:2px;">Backflow (at-cost pass-through)</div>
+          <div style="font-size:clamp(24px,2.6vw,38px); font-weight:700; color:var(--dim); font-family:'DM Mono',monospace; line-height:1; margin-bottom:6px;">$32,400</div>
+          <div class="bar-track"><div class="bar-fill" style="width:12%;background:var(--dim);"></div></div>
+        </div>
+        <div style="height:1px;background:var(--border);"></div>
+        <div>
+          <div style="font-size:clamp(10px,.75vw,12px); color:var(--dim); margin-bottom:3px;">SS total billable pipeline</div>
+          <div style="font-size:clamp(20px,2vw,30px); font-weight:700; color:var(--gold); font-family:'DM Mono',monospace;">$275,605</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:clamp(8px,1vh,12px);">
+      <div style="background:#0A1F12; border:1px solid #2A5040; border-radius:clamp(8px,.8vw,12px); padding:clamp(12px,1.4vh,18px) clamp(14px,1.4vw,20px);">
+        <div style="font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,11px); color:var(--green); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px;">✓ Closed Won · Actual</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div><div style="font-size:clamp(10px,.8vw,13px); color:var(--dim);">Svc + Margin</div><div style="font-size:clamp(15px,1.4vw,21px); font-weight:700; color:var(--gold); font-family:'DM Mono',monospace;">$12,392</div></div>
+          <div><div style="font-size:clamp(10px,.8vw,13px); color:var(--dim);">Sod</div><div style="font-size:clamp(15px,1.4vw,21px); font-weight:700; color:var(--teal); font-family:'DM Mono',monospace;">$2,960</div></div>
+        </div>
+      </div>
+
+      <div style="background:#1A1000; border:1px solid #3A2800; border-radius:clamp(8px,.8vw,12px); padding:clamp(12px,1.4vh,18px) clamp(14px,1.4vw,20px);">
+        <div style="font-family:'DM Mono',monospace; font-size:clamp(9px,.75vw,11px); color:var(--hot); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px;">⬆ Hot Pipeline · Onsite Scheduled</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div><div style="font-size:clamp(10px,.8vw,13px); color:var(--dim);">Svc + Margin</div><div style="font-size:clamp(15px,1.4vw,21px); font-weight:700; color:var(--hot); font-family:'DM Mono',monospace;">$16,765</div></div>
+          <div><div style="font-size:clamp(10px,.8vw,13px); color:var(--dim);">Sod</div><div style="font-size:clamp(15px,1.4vw,21px); font-weight:700; color:var(--hot); font-family:'DM Mono',monospace;">$8,908</div></div>
+        </div>
+      </div>
+
+      <div class="panel" style="flex:1;">
+        <div class="panel-title" style="color:var(--gold);">Main Pipeline · 37% Projected</div>
+        <div style="display:flex; flex-direction:column; gap:clamp(8px,1vh,12px); flex:1; justify-content:center;">
+          <div style="background:#1A1500; border:1px solid #3A2E00; border-radius:8px; padding:clamp(10px,1.2vh,16px) clamp(12px,1.2vw,16px);">
+            <div style="font-size:clamp(11px,.85vw,13px); color:var(--dim); margin-bottom:3px;">Services + HW margin</div>
+            <div style="font-size:clamp(22px,2.2vw,32px); font-weight:700; color:var(--gold); font-family:'DM Mono',monospace; line-height:1;">$57,426</div>
+          </div>
+          <div style="background:#0F1F1C; border:1px solid #1E3E38; border-radius:8px; padding:clamp(10px,1.2vh,16px) clamp(12px,1.2vw,16px);">
+            <div style="font-size:clamp(11px,.85vw,13px); color:var(--dim); margin-bottom:3px;">Sod bonus</div>
+            <div style="font-size:clamp(22px,2.2vw,32px); font-weight:700; color:var(--teal); font-family:'DM Mono',monospace; line-height:1;">$17,381</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:clamp(10px,1.2vh,14px);">
+      <div class="panel" style="flex:1;">
+        <div class="panel-title">Full Picture · All Scenarios</div>
+        <table class="mini-table">
+          <thead>
+            <tr><th>Stream</th><th style="text-align:right;">Closed</th><th style="text-align:right;">Hot</th><th style="text-align:right;">37% Proj</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--green);">Irrigreen HW</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">$9,727</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--hot);font-weight:600;">$13,846</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--slate);">$48,457</td>
+            </tr>
+            <tr>
+              <td style="color:var(--gold);">SS Svc + Margin</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">$12,392</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--hot);font-weight:600;">$16,765</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--slate);">$57,426</td>
+            </tr>
+            <tr>
+              <td style="color:var(--teal);">SS Sod</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">$2,960</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--hot);font-weight:600;">$8,908</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--slate);">$17,381</td>
+            </tr>
+            <tr>
+              <td style="color:var(--slate);">Backflow</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">$1,500</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--hot);font-weight:600;">$4,500</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--slate);">$9,768</td>
+            </tr>
+            <tr class="total-row">
+              <td>Total</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);">$26,579</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--hot);">$44,019</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--white);">$133,032</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="footnote" style="margin-top:clamp(8px,1vh,12px);">HW = Irrigreen net (75% of list). SS svc includes 25% HW margin.</div>
+      </div>
+
+      <div style="background:#0F2018; border:1px solid #1E4030; border-radius:clamp(7px,.7vw,11px); padding:clamp(12px,1.4vh,18px) clamp(14px,1.4vw,20px);">
+        <div style="font-size:clamp(9px,.72vw,12px); color:var(--slate); letter-spacing:.06em; text-transform:uppercase; font-family:'DM Mono',monospace; margin-bottom:8px;">Best-Case Outlook</div>
+        <div class="infobox-text">
+          Irrigreen total outlook: <span class="mono-hi" style="color:var(--green);">$72,030</span><br>
+          Sod Smith total outlook: <span class="mono-hi" style="color:var(--gold);">$131,600</span><br>
+          Combined: <span class="mono-hi" style="color:var(--white);">$203,630</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<button class="arrow" id="prev">&#8592;</button>
+<button class="arrow" id="next">&#8594;</button>
+<div class="nav">
+  <div class="dot on" data-i="0"></div>
+  <div class="dot" data-i="1"></div>
+  <div class="dot" data-i="2"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  let cur = 0;
+  function go(n) {
+    slides[cur].classList.remove('active'); dots[cur].classList.remove('on');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active'); dots[cur].classList.add('on');
+  }
+  document.getElementById('next').onclick = () => go(cur+1);
+  document.getElementById('prev').onclick = () => go(cur-1);
+  dots.forEach(d => d.onclick = () => go(+d.dataset.i));
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown') go(cur+1);
+    if (e.key==='ArrowLeft' ||e.key==='ArrowUp')   go(cur-1);
+  });
+</script>
+</body>
+</html>
